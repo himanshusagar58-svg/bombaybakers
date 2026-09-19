@@ -250,6 +250,7 @@
     .hero-frame {
       position: relative;
       width: min(100%, 480px);
+      perspective: 800px;
     }
 
     .hero-frame img {
@@ -257,6 +258,32 @@
       height: auto;
       background: transparent;
       display: block;
+      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+    .hero-frame:hover img {
+      transform: scale(1.06) rotate(-2.5deg);
+    }
+
+    /* Reveal on scroll */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+                  transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.12s; }
+    .reveal-delay-2 { transition-delay: 0.24s; }
+    .reveal-delay-3 { transition-delay: 0.36s; }
+    .reveal-delay-4 { transition-delay: 0.48s; }
+
+    .parallax-slow {
+      will-change: transform;
     }
 
     .scallop-badge {
@@ -390,18 +417,17 @@
     }
 
     .custom-gallery {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.25rem;
-      align-items: end;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     .custom-gallery img {
       width: 100%;
+      max-width: 420px;
       height: auto;
       background: transparent;
       display: block;
     }
-    .custom-gallery img:nth-child(1) { grid-column: 1 / -1; }
 
     /* ---------- PASTRIES ---------- */
     .pastries {
@@ -552,15 +578,40 @@
     }
     .menu-item:hover { transform: translateY(-4px); }
     .menu-item img {
-      width: 100%;
+      width: 85%;
       height: auto;
       background: transparent;
       display: block;
+      margin: 0 auto;
     }
     .menu-item-body {
       padding: 0.9rem 0.25rem 0.5rem;
       text-align: center;
     }
+
+    /* ---------- PRICE MENUS ---------- */
+    .price-menus {
+      background: var(--cream-dark);
+    }
+    .price-menu-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .price-menu-card {
+      background: transparent;
+    }
+    .price-menu-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+      box-shadow: 0 12px 36px rgba(92, 42, 58, 0.1);
+    }
+
+    /* (parallax styles defined above) */
     .menu-item-body h4 {
       font-family: 'Cormorant Garamond', serif;
       font-size: 1.2rem;
@@ -720,6 +771,10 @@
         grid-template-columns: 1fr;
         max-width: 380px;
       }
+      .price-menu-grid {
+        grid-template-columns: 1fr;
+        max-width: 480px;
+      }
       .form-grid { grid-template-columns: 1fr; }
     }
 
@@ -757,7 +812,8 @@
       <li><a href="#custom">Custom Cakes</a></li>
       <li><a href="#pastries">Pastries</a></li>
       <li><a href="#cheesecakes">Cheesecakes</a></li>
-      <li><a href="#menu">Menu</a></li>
+      <li><a href="#menu">Regular Bakes</a></li>
+      <li><a href="#prices">Prices</a></li>
       <li><a href="#enquiry">Enquire</a></li>
     </ul>
     <a href="#enquiry" class="nav-cta">Order on WhatsApp</a>
@@ -769,41 +825,40 @@
   <!-- HERO -->
   <header class="hero" id="top">
     <div class="hero-content">
-      <div class="hero-eyebrow">Bombay Bakers</div>
-      <h1>Custom cakes that<br>turn moments into<br><em>memories</em></h1>
-      <p class="hero-lead">
+      <h1 class="reveal">Custom cakes made<br>to order for your<br><em>special day</em></h1>
+      <p class="hero-lead reveal reveal-delay-1">
         From intimate celebrations to grand occasions, we craft every cake to your story. Share your idea and we will bring it to life.
       </p>
-      <div class="hero-actions">
+      <div class="hero-actions reveal reveal-delay-2">
         <a href="#enquiry" class="btn btn-primary">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.85 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
           Order Custom Cake
         </a>
         <a href="#menu" class="btn btn-ghost">View Menu</a>
       </div>
-      <div class="hero-note">
+      <div class="hero-note reveal reveal-delay-3">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
         <span>Tell us the occasion, share a reference photo on WhatsApp, and final pricing is confirmed on call or chat.</span>
       </div>
     </div>
-    <div class="hero-visual">
+    <div class="hero-visual parallax-slow">
       <div class="hero-frame">
         <img src="images/herocake.png" alt="Signature custom cake by Bombay Bakers" />
-        <div class="scallop-badge">Baking Joy, Creating Memories</div>
+        <div class="scallop-badge">Freshly baked happiness every day</div>
       </div>
     </div>
   </header>
 
   <!-- CUSTOM CAKES -->
   <section class="custom-cakes" id="custom">
-    <div class="section-head">
+    <div class="section-head reveal">
       <div class="section-eyebrow">Our Specialty</div>
       <h2>Custom Celebration Cakes</h2>
       <p>Designed around your occasion, flavour preferences and the story you want the cake to tell.</p>
     </div>
 
     <div class="custom-grid">
-      <div class="custom-copy">
+      <div class="custom-copy reveal reveal-delay-1">
         <h3>How to order your cake</h3>
         <p>We keep the process simple and personal. Most custom cakes start with a conversation on WhatsApp.</p>
         <ul class="order-steps">
@@ -831,38 +886,36 @@
         </ul>
         <a href="#enquiry" class="btn btn-primary">Start Your Order</a>
       </div>
-      <div class="custom-gallery">
+      <div class="custom-gallery parallax-slow">
         <img src="images/photo_2026-09-18_20-17-35.png" alt="Modern blue and silver custom cake" />
-        <img src="images/photo_2026-09-18_20-17-33.png" alt="Purple birthday cake with butterflies" />
-        <img src="images/photo_2026-09-18_20-17-31.png" alt="Blue car theme celebration cake" />
       </div>
     </div>
   </section>
 
   <!-- PASTRIES -->
   <section class="pastries" id="pastries">
-    <div class="section-head">
+    <div class="section-head reveal">
       <div class="section-eyebrow">Everyday Indulgence</div>
       <h2>Signature Pastries</h2>
       <p>Layered, precise and finished with the same care as our celebration cakes.</p>
     </div>
 
     <div class="pastry-rail">
-      <article class="pastry-card">
+      <article class="pastry-card reveal reveal-delay-1">
         <img src="images/photo_2026-09-18_20-17-21.png" alt="Dark chocolate pastry" />
         <div class="pastry-body">
           <h3>Dark Chocolate</h3>
           <p>Rich cocoa layers, soft cream and generous chocolate shavings.</p>
         </div>
       </article>
-      <article class="pastry-card">
+      <article class="pastry-card reveal reveal-delay-2">
         <img src="images/photo_2026-09-18_20-17-03.png" alt="White chocolate pastry" />
         <div class="pastry-body">
           <h3>White Chocolate</h3>
           <p>Delicate sponge with pink cream and delicate white chocolate curls.</p>
         </div>
       </article>
-      <article class="pastry-card">
+      <article class="pastry-card reveal reveal-delay-3">
         <img src="images/photo_2026-09-18_20-17-19.png" alt="Caramel pearl pastry" />
         <div class="pastry-body">
           <h3>Caramel Pearl</h3>
@@ -874,21 +927,21 @@
 
   <!-- CHEESECAKES -->
   <section class="cheesecakes" id="cheesecakes">
-    <div class="section-head">
+    <div class="section-head reveal">
       <div class="section-eyebrow">Creamy Classics</div>
       <h2>Cheesecake Highlights</h2>
       <p>Smooth, balanced and finished with thoughtful details for every slice.</p>
     </div>
 
     <div class="cheese-layout">
-      <div class="cheese-visual">
+      <div class="cheese-visual parallax-slow">
         <span class="cheese-badge">House Favourite</span>
-        <img src="images/photo_2026-09-18_20-17-32.png" alt="White chocolate petal cake" />
+        <img src="images/cheesecake.png" alt="Lotus Biscoff cheesecake slice" />
       </div>
-      <div class="cheese-copy">
+      <div class="cheese-copy reveal reveal-delay-1">
         <h3>Designed for sharing</h3>
         <p>
-          Our cheesecakes and cream-forward cakes sit at the heart of many celebrations. Expect clean flavours, careful textures and finishes that photograph as well as they taste.
+          Made fresh daily with rich cream, quality chocolate, and crisp textures - baked to look great and taste even better.
         </p>
         <div class="cheese-tags">
           <span>Classic Baked</span>
@@ -903,13 +956,13 @@
 
   <!-- MENU -->
   <section class="menu" id="menu">
-    <div class="section-head">
+    <div class="section-head reveal">
       <div class="section-eyebrow">From Our Kitchen</div>
-      <h2>The Menu</h2>
+      <h2>Regular Bakes</h2>
       <p>A selection of what we bake regularly. Custom work is always available on request.</p>
     </div>
 
-    <div class="menu-tabs" role="tablist">
+    <div class="menu-tabs reveal reveal-delay-1" role="tablist">
       <button class="menu-tab active" data-filter="all">All</button>
       <button class="menu-tab" data-filter="pastry">Pastries</button>
       <button class="menu-tab" data-filter="cake">Cakes</button>
@@ -997,9 +1050,26 @@
     </div>
   </section>
 
+  <!-- PRICE MENUS -->
+  <section class="price-menus" id="prices">
+    <div class="section-head reveal">
+      <div class="section-eyebrow">Transparent Pricing</div>
+      <h2>Our Menus</h2>
+      <p>Base prices per pound. Customisation may add a little more — we confirm everything on WhatsApp.</p>
+    </div>
+    <div class="price-menu-grid">
+      <div class="price-menu-card reveal reveal-delay-1">
+        <img src="images/cake-menu.jpg" alt="Bombay Bakers Cake Menu - prices per pound" />
+      </div>
+      <div class="price-menu-card reveal reveal-delay-2">
+        <img src="images/cheesecake-menu.jpg" alt="Bombay Bakers Cheesecake Menu - prices per pound" />
+      </div>
+    </div>
+  </section>
+
   <!-- ENQUIRY -->
   <section class="enquiry" id="enquiry">
-    <div class="enquiry-wrap">
+    <div class="enquiry-wrap reveal">
       <h2>Order or Enquire</h2>
       <p>Fill in the details below. We will open WhatsApp with your message ready so you can attach a reference photo right away.</p>
 
@@ -1047,7 +1117,7 @@
   <!-- FOOTER -->
   <footer>
     <div class="footer-logo">Bombay <span>Bakers</span></div>
-    <p class="tagline">Baking Joy, Creating Memories.</p>
+    <p class="tagline">Freshly baked happiness every day.</p>
     <p>Custom cakes · Signature pastries · Cheesecakes</p>
     <p>Orders via WhatsApp · Price confirmed on call or chat</p>
     <div class="footer-bottom">
@@ -1109,11 +1179,44 @@
       });
     });
 
-    // Nav scroll
+    // Nav scroll + stronger parallax
     const nav = document.getElementById('nav');
+    const parallaxEls = document.querySelectorAll('.parallax-slow');
+    let ticking = false;
+    function updateParallax() {
+      parallaxEls.forEach(el => {
+        if (el.classList.contains('reveal') && !el.classList.contains('visible')) return;
+        const rect = el.getBoundingClientRect();
+        const center = rect.top + rect.height / 2;
+        const viewCenter = window.innerHeight / 2;
+        const offset = (center - viewCenter) * 0.22;
+        el.style.transform = `translate3d(0, ${offset}px, 0)`;
+      });
+      ticking = false;
+    }
     window.addEventListener('scroll', () => {
       nav.classList.toggle('scrolled', window.scrollY > 20);
+      if (!ticking) {
+        window.requestAnimationFrame(updateParallax);
+        ticking = true;
+      }
+    }, { passive: true });
+    updateParallax();
+
+    // Scroll reveal animations
+    document.querySelectorAll('.menu-item').forEach((el, i) => {
+      el.classList.add('reveal', `reveal-delay-${(i % 4) + 1}`);
     });
+    const revealEls = document.querySelectorAll('.reveal');
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    revealEls.forEach(el => revealObserver.observe(el));
 
     // Mobile menu
     const toggle = document.getElementById('menuToggle');
