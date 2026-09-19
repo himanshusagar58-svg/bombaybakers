@@ -127,17 +127,24 @@
 
     /* ---------- HERO ---------- */
     .hero {
+      min-height: 230vh;
+      position: relative;
+      overflow: clip;
+    }
+
+    .hero-stage {
+      position: sticky;
+      top: 0;
       min-height: 100vh;
       display: grid;
       grid-template-columns: 1.05fr 0.95fr;
       align-items: center;
       gap: 3rem;
       padding: 7rem 5% 4rem;
-      position: relative;
       overflow: hidden;
     }
 
-    .hero::before {
+    .hero-stage::before {
       content: '';
       position: absolute;
       top: -20%;
@@ -149,7 +156,7 @@
       z-index: 0;
     }
 
-    .hero-content { position: relative; z-index: 1; max-width: 540px; }
+    .hero-content { position: relative; z-index: 2; max-width: 540px; }
 
     .hero-eyebrow {
       display: inline-flex;
@@ -241,30 +248,66 @@
 
     .hero-visual {
       position: relative;
-      z-index: 1;
+      z-index: 2;
       display: flex;
       justify-content: center;
       align-items: center;
+      min-width: 0;
     }
 
     .hero-frame {
       position: relative;
       width: min(100%, 480px);
+      aspect-ratio: 4 / 5;
       perspective: 800px;
+      display: grid;
+      place-items: center;
     }
 
-    .hero-frame img {
+    .hero-sequence-canvas {
       width: 100%;
-      height: auto;
-      background: transparent;
+      height: 100%;
       display: block;
-      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-      transform-style: preserve-3d;
-      will-change: transform;
+      object-fit: contain;
+      overflow: visible;
+      transform-origin: center center;
+      will-change: transform, opacity;
     }
-    .hero-frame:hover img {
-      transform: scale(1.06) rotate(-2.5deg);
+
+    .hero-frame::after {
+      content: '';
+      position: absolute;
+      inset: 8% 5% 5%;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(170, 100, 118, 0.10), transparent 68%);
+      z-index: -1;
+      pointer-events: none;
     }
+
+    .hero-scroll-hint {
+      position: absolute;
+      left: 50%;
+      bottom: 1.25rem;
+      transform: translateX(-50%);
+      display: inline-flex;
+      align-items: center;
+      gap: .55rem;
+      color: var(--burgundy-soft);
+      font-size: .72rem;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      opacity: .72;
+      white-space: nowrap;
+      z-index: 3;
+      transition: opacity .3s ease;
+    }
+    .hero-scroll-hint::after {
+      content: '';
+      width: 28px;
+      height: 1px;
+      background: currentColor;
+    }
+    .hero.is-sequenced .hero-scroll-hint { opacity: 0; }
 
     /* Reveal on scroll */
     .reveal {
@@ -751,16 +794,21 @@
     /* ---------- RESPONSIVE ---------- */
     @media (max-width: 960px) {
       .hero {
-        grid-template-columns: 1fr;
-        padding-top: 6rem;
         text-align: center;
+      }
+      .hero-stage {
+        min-height: 100vh;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        padding: 6.25rem 6% 4.5rem;
       }
       .hero-content { max-width: 100%; margin: 0 auto; }
       .hero-lead { margin-left: auto; margin-right: auto; }
       .hero-actions { justify-content: center; }
       .hero-note { margin-left: auto; margin-right: auto; text-align: left; }
-      .hero-visual { order: -1; margin-bottom: 1rem; }
-      .hero-frame { width: min(100%, 360px); }
+      .hero-visual { order: -1; margin-bottom: 0.5rem; }
+      .hero-frame { width: min(100%, 350px); aspect-ratio: 4 / 5; }
+      .hero-scroll-hint { bottom: .7rem; font-size: .62rem; }
 
       .custom-grid,
       .cheese-layout {
@@ -824,6 +872,7 @@
 
   <!-- HERO -->
   <header class="hero" id="top">
+    <div class="hero-stage">
     <div class="hero-content">
       <h1 class="reveal">Custom cakes made<br>to order for your<br><em>special day</em></h1>
       <p class="hero-lead reveal reveal-delay-1">
@@ -841,11 +890,13 @@
         <span>Tell us the occasion, share a reference photo on WhatsApp, and final pricing is confirmed on call or chat.</span>
       </div>
     </div>
-    <div class="hero-visual parallax-slow">
-      <div class="hero-frame">
-        <img src="images/herocake.png" alt="Signature custom cake by Bombay Bakers" />
+    <div class="hero-visual">
+      <div class="hero-frame" aria-label="A scrollable selection of Bombay Bakers cakes">
+        <canvas class="hero-sequence-canvas" id="heroSequence" aria-hidden="true"></canvas>
         <div class="scallop-badge">Freshly baked happiness every day</div>
       </div>
+    </div>
+    <div class="hero-scroll-hint" aria-hidden="true">Scroll to explore</div>
     </div>
   </header>
 
@@ -1178,6 +1229,118 @@
         });
       });
     });
+
+    // Scroll-driven hero image sequence. The supplied product photos are not animation frames,
+    // so the canvas crossfades between them while adding a subtle scale/position shift.
+    const hero = document.getElementById('top');
+    const heroCanvas = document.getElementById('heroSequence');
+    const heroCtx = heroCanvas ? heroCanvas.getContext('2d') : null;
+    const heroFrames = [
+      'images/herocake.png',
+      'images/photo_2026-09-18_20-17-33.png',
+      'images/photo_2026-09-18_20-17-31.png',
+      'images/photo_2026-09-18_20-17-32.png',
+      'images/photo_2026-09-18_20-17-35.png',
+      'images/photo_2026-09-18_20-17-34.png',
+      'images/photo_2026-09-18_20-17-31-2.png',
+      'images/photo_2026-09-18_20-17-21.png'
+    ];
+    const loadedHeroFrames = heroFrames.map(src => {
+      const img = new Image();
+      img.decoding = 'async';
+      img.src = src;
+      return img;
+    });
+
+    let heroRaf = 0;
+    let heroReady = false;
+    let lastHeroProgress = -1;
+
+    function sizeHeroCanvas() {
+      if (!heroCanvas || !heroCtx) return;
+      const rect = heroCanvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      heroCanvas.width = Math.max(1, Math.round(rect.width * dpr));
+      heroCanvas.height = Math.max(1, Math.round(rect.height * dpr));
+      heroCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      heroCtx.imageSmoothingEnabled = true;
+      heroCtx.imageSmoothingQuality = 'high';
+      renderHero(0);
+    }
+
+    function drawContain(ctx, img, alpha, scale, xShift, yShift, width, height) {
+      if (!img || !img.complete || !img.naturalWidth) return;
+      const imageRatio = img.naturalWidth / img.naturalHeight;
+      const boxRatio = width / height;
+      let drawWidth, drawHeight;
+      if (imageRatio > boxRatio) {
+        drawWidth = width * scale;
+        drawHeight = drawWidth / imageRatio;
+      } else {
+        drawHeight = height * scale;
+        drawWidth = drawHeight * imageRatio;
+      }
+      const x = (width - drawWidth) / 2 + xShift;
+      const y = (height - drawHeight) / 2 + yShift;
+      ctx.globalAlpha = alpha;
+      ctx.drawImage(img, x, y, drawWidth, drawHeight);
+    }
+
+    function renderHero(progress) {
+      if (!heroCtx || !heroCanvas) return;
+      const width = heroCanvas.clientWidth;
+      const height = heroCanvas.clientHeight;
+      if (!width || !height) return;
+      heroCtx.clearRect(0, 0, width, height);
+
+      const position = progress * (loadedHeroFrames.length - 1);
+      const index = Math.floor(position);
+      const blend = position - index;
+      const next = Math.min(index + 1, loadedHeroFrames.length - 1);
+      const drift = Math.sin(progress * Math.PI) * 8;
+      const scale = 1.015 + Math.sin(progress * Math.PI) * 0.035;
+
+      drawContain(heroCtx, loadedHeroFrames[index], 1 - blend, scale, -drift, progress * 4, width, height);
+      if (next !== index) {
+        drawContain(heroCtx, loadedHeroFrames[next], blend, scale + 0.006, drift, progress * 4, width, height);
+      }
+      lastHeroProgress = progress;
+    }
+
+    function updateHeroSequence() {
+      if (!hero) return;
+      const rect = hero.getBoundingClientRect();
+      const scrollable = Math.max(1, hero.offsetHeight - window.innerHeight);
+      const progress = Math.min(1, Math.max(0, -rect.top / scrollable));
+      hero.classList.toggle('is-sequenced', progress > 0.03);
+      if (Math.abs(progress - lastHeroProgress) < 0.001) return;
+      if (!heroRaf) {
+        heroRaf = requestAnimationFrame(() => {
+          renderHero(progress);
+          heroRaf = 0;
+        });
+      }
+    }
+
+    if (heroCanvas && heroCtx) {
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let loadedCount = 0;
+      loadedHeroFrames.forEach(img => {
+        const done = () => {
+          loadedCount += 1;
+          if (loadedCount === 1) {
+            heroReady = true;
+            sizeHeroCanvas();
+            updateHeroSequence();
+          }
+          if (loadedCount === loadedHeroFrames.length) updateHeroSequence();
+        };
+        if (img.complete) done();
+        else { img.addEventListener('load', done, { once: true }); img.addEventListener('error', done, { once: true }); }
+      });
+      window.addEventListener('resize', sizeHeroCanvas, { passive: true });
+      if (!reduceMotion) window.addEventListener('scroll', updateHeroSequence, { passive: true });
+    }
 
     // Nav scroll + stronger parallax
     const nav = document.getElementById('nav');
